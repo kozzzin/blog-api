@@ -2,7 +2,6 @@ const bcrypt = require('bcrypt');
 const Admin = require('../models/admin');
 const Post = require('../models/post');
 const Category = require('../models/category');
-// const dotenv = require('dotenv').config();
 const jwt = require("jsonwebtoken");
 
 exports.createAdmin = (req,res,next) => {
@@ -48,7 +47,7 @@ exports.postLogin = (req,res,next) => {
           if (err) return res.send(err);
           if (result) {
             const secret = process.env.JWT_SECRET;
-            const token = jwt.sign({ id: user._id }, secret, {expiresIn:9999});
+            const token = jwt.sign({ id: user._id, role: 'admin' }, secret, {});
             return res.status(200).json({
                 message: "Auth Passed",
                 token
@@ -77,6 +76,7 @@ exports.getAdminPosts = (req,res,next) => {
 
 // CATEGORIES
 exports.getAdminAllCategories = (req,res,next) => {
+  console.log(req.user);
   Category
     .find()
     .then(

@@ -4,6 +4,7 @@ var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 const Admin = require('./models/admin');
+const User = require('./models/user');
 
 const dotenv = require('dotenv').config();
 
@@ -19,18 +20,31 @@ opts.jwtFromRequest = ExtractJwt.fromAuthHeaderAsBearerToken();
 opts.secretOrKey = process.env.JWT_SECRET;
 
 const jwtStrategy = new JwtStrategy(opts, (jwt_payload, done) => {
-  Admin.findOne({_id: jwt_payload.id}, function(err, user) {
-    if (err) {
-        return done(err, false);
-    }
-    if (user) {
-        return done(null, user._id);
-    } else {
-        return done(null, false);
-    }
-  });
+  if (jwt_payload.role === 'admin') {
+    Admin.findOne({_id: jwt_payload.id}, function(err, user) {
+      if (err) {
+          return done(err, false);
+      }
+      if (user) {
+          return done(null, { id: user._id, role: jwt_payload.role });
+      } else {
+          return done(null, false);
+      }
+    });
+  } else {
+    User.findOne({_id: jwt_payload.id}, function(err, user) {
+      if (err) {
+          return done(err, false);
+      }
+      if (user) {
+          return done(null, { id: user._id, role: user.role });
+      } else {
+          return done(null, false);
+      }
+    });
+  }
 });
-
+passport.use(jwtStrategy);
 
 
 const mongoose = require("mongoose");
@@ -40,13 +54,13 @@ const db = mongoose.connection;
 db.on("error", console.error.bind(console, "mongo connection error"));
 
 var indexRouter = require('./routes/index');
-var usersRouter = require('./routes/users');
 const adminRouter = require('./routes/admin');
+const userRouter = require('./routes/user');
 
 var app = express();
 
-
-
+const cors = require('cors');
+app.use(cors());
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -64,22 +78,10 @@ app.use((req,res,next) => {
   next();
 });
 
-passport.use(jwtStrategy);
-app.get(
-  '/test',
-  passport.authenticate('jwt', { session: false }),
-  (req,res,next) => {
-    res.send(req.user);
-  }  
-);
-
-
 
 app.use('/', indexRouter);
-app.use('/users', usersRouter);
 app.use('/admin', adminRouter);
-
-
+app.use('/user', userRouter)
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

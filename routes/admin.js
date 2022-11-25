@@ -8,6 +8,13 @@ router.get('/login', controller.getLogin);
 router.post('/login', controller.postLogin);
 
 router.use(passport.authenticate('jwt', { session: false }));
+router.use((req,res,next) => {
+  if (req.user.role === 'admin') {
+      return next(null, true);
+  } else {
+    return res.status(403).send('not admin');
+  }
+});
 router.get('/posts', controller.getAdminPosts);
 
 // CATEGORIES
