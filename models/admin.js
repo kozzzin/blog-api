@@ -10,7 +10,7 @@ const AdminSchema = new Schema({
     type: String,
     required: [true, 'You have to provide password']
   },
-});
+},{timestamps:true});
 
 const Admin = mongoose.model("Admin", AdminSchema);
 
