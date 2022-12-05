@@ -31,4 +31,10 @@ router.get('/posts/:id', controller.getAdminPost);
 router.put('/posts/:id', controller.updateAdminPost);
 router.delete('/posts/:id', controller.deleteAdminPost);
 
+//Comments
+
+// ONLY ADMIN
+router.get('/comments/',controller.getComments);
+router.delete('/comments/:commentId',controller.deleteComment);
+
 module.exports = router;

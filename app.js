@@ -56,6 +56,9 @@ db.on("error", console.error.bind(console, "mongo connection error"));
 var indexRouter = require('./routes/index');
 const adminRouter = require('./routes/admin');
 const userRouter = require('./routes/user');
+const blogRouter = require('./routes/blog');
+const commentRouter = require('./routes/comment');
+const categoryRouter = require('./routes/category');
 
 var app = express();
 
@@ -81,7 +84,10 @@ app.use((req,res,next) => {
 
 app.use('/', indexRouter);
 app.use('/admin', adminRouter);
-app.use('/user', userRouter)
+app.use('/user', userRouter);
+app.use('/blog', blogRouter);
+app.use('/comment', commentRouter);
+app.use('/category', categoryRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

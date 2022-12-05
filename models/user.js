@@ -15,7 +15,7 @@ const UserSchema = new Schema({
     default: 'user'
   },
   banned: {
-    type: String,
+    type: Boolean,
     default: false
   },
 },{timestamps:true});

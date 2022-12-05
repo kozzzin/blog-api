@@ -2,8 +2,12 @@ const bcrypt = require('bcrypt');
 const Admin = require('../models/admin');
 const Post = require('../models/post');
 const Category = require('../models/category');
+const Comment = require('../models/comment');
 const jwt = require("jsonwebtoken");
+const async = require('async');
 
+
+// ADD NEW ADMIN
 exports.createAdmin = (req,res,next) => {
   const saltRounds = 10;
   const myPassword = 'admin';
@@ -29,10 +33,13 @@ exports.createAdmin = (req,res,next) => {
   }).catch(err => res.send(err));
 }
 
+// LOGIN FRONT !
 exports.getLogin = (req,res,next) => {
   res.render('adminLogin');
 }
 
+
+// LOGIN
 exports.postLogin = (req,res,next) => {
   if (!req.body.username) {
     return res.send(`you have to provide username and password -- ${req.body.username}`);
@@ -76,15 +83,41 @@ exports.getAdminPosts = (req,res,next) => {
 
 // CATEGORIES
 exports.getAdminAllCategories = (req,res,next) => {
-  console.log(req.user);
-  Category
-    .find()
-    .then(
-      (cat) => {
-        return res.json(cat);
+  async.waterfall(
+    [
+      function(cb) {
+        Category
+          .find()
+          .then(categories => cb(null,categories));
+      },
+      function(categories, cb) {
+        Post
+          .find()
+          .populate('category')
+          .then(posts => {
+            const catsWithPostCount = categories.map(
+              (cat) => {
+                return {
+                  ...cat._doc,
+                  postsCount: posts.filter(
+                    post => {
+                      if (post.category === undefined) return false;
+                      console.log(post.category._id);
+                      return post.category._id.toString() === cat._doc._id.toString();
+                    }
+                  ).length
+                }
+              }
+            );
+            cb(null,catsWithPostCount);
+          })
       }
-    )
-    .catch((err) => res.json(err));
+    ],
+    function(err, result) {
+      console.log(result);
+      return res.json(result);
+    }
+  );
 }
 
 // C
@@ -116,6 +149,7 @@ exports.getAdminCategory = (req,res,next) => {
 
 // U
 exports.updateAdminCategory = (req,res,next) => {
+  console.log(req.body);
   Category
   .findByIdAndUpdate(
     req.params.id,
@@ -224,9 +258,25 @@ exports.deleteAdminPost = (req,res,next) => {
     .catch((err) => res.json(err));  
 } 
 
-// exports.postAdminPost = (req,res,next)  => {
-  
-// }
 
+// give all comments
+exports.getComments = (req,res,next) => {
+  Comment
+    .find()
+    .populate('author','username')
+    .populate('post')
+    .then(
+      (comments) => {
+        return res.json(comments);
+      }
+    )
+    .catch(err => res.json(err));
+}
 
-
+// delete cooment !
+exports.deleteComment = (req,res,next) => {
+  Comment
+    .findByIdAndDelete(req.params.commentId)
+    .then(result => res.json({status: 'deleted', details: result}))
+    .catch(err => res.json(err))
+}

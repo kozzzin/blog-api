@@ -1,13 +1,8 @@
+var express = require('express');
+var router = express.Router();
+const controller = require('../controllers/blog');
 
-// public
-// view posts
-// view comments
+router.get('/',controller.getAllPosts);
+router.get('/:id',controller.getOnePost);
 
-// admin only
-// add posts
-// edit posts
-// delete posts
-/// delete comments
-
-// registered only
-// post comments
+module.exports = router;

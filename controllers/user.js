@@ -4,7 +4,12 @@ const Post = require('../models/post');
 const Category = require('../models/category');
 const jwt = require("jsonwebtoken");
 
+exports.getUserInfo = (req,res,next) => {
+  console.log('user');
+  return res.json(req.user);
+}
 
+// REGISTER
 exports.createUser = (req,res,next) => {
   const saltRounds = 10;
   const myPassword = req.body.password;
@@ -25,12 +30,13 @@ exports.createUser = (req,res,next) => {
         (result) =>  {
           res.send(result);
         }
-      ).catch(err => res.send(err))
+      ).catch(err => res.send(err));
     })
     
   }).catch(err => res.send(err));
 }
 
+// LOGIN !
 exports.postLogin = (req,res,next) => {
   if (!req.body.username) {
     return res.send(`you have to provide username and password -- ${req.body.username}`);
